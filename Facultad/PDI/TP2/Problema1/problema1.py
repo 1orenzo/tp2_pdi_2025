@@ -12,7 +12,7 @@ def mostrar(titulo, imagen):
 
 # PREPROCESADO
 
-# A) Leer la imagen en color
+# Leer la imagen en color
 directorio_script = os.path.dirname(os.path.abspath(__file__))
 ruta_imagen = os.path.join(directorio_script, "monedas.jpg")
 img_original = cv2.imread(ruta_imagen)
@@ -30,11 +30,11 @@ img = cv2.resize(img_original, (width, height), interpolation=cv2.INTER_AREA)
 # Convertimos a gris para procesar
 gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
-# B) Suavizar con GaussianBlur para quitar ruido 
+# Suavizar con GaussianBlur para quitar ruido 
 img_blur = cv2.GaussianBlur(gray, (3, 3), 0)
 
-# C) Corregir fondo no uniforme (Top-Hat / Sustracción de fondo)
-# Unidad 6: Top-Hat se define como "Imagen - Apertura".
+# Corregir fondo no uniforme (Top-Hat / Sustracción de fondo)
+
 kernel_fondo = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (71, 71))
 img_sin_fondo = cv2.morphologyEx(img_blur, cv2.MORPH_TOPHAT, kernel_fondo)
 
@@ -48,10 +48,10 @@ bordes = cv2.Canny(img_blur, 30, 80)
 # Refinamiento: Dilatación + Clausura 
 kernel_morf = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2, 2))
 
-# 1. Dilatación para conectar segmentos
+# Dilatación para conectar segmentos
 bordes_procesados = cv2.dilate(bordes, kernel_morf, iterations=1)
 
-# 2. Clausura para cerrar contornos
+# Clausura para cerrar contornos
 bordes_procesados = cv2.morphologyEx(bordes_procesados, cv2.MORPH_CLOSE, kernel_morf, iterations=2)
 
 # CORRECCIÓN DE FUSIÓN (Separar objetos pegados)
@@ -61,7 +61,7 @@ bordes_separados = cv2.erode(bordes_procesados, kernel_separacion, iterations=3)
 
 # mostrar("Corrección 1: Objetos Separados (Erosión)", bordes_separados)
 
-# NUEVO PASO: REPARACIÓN DE BORDES 
+
 # Usamos una Clausura suave para volver a cerrar la moneda rota
 # sin volver a unir los objetos separados.
 kernel_reparacion = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (1, 1))
@@ -95,11 +95,11 @@ for i, cnt in enumerate(contours):
     
     if perimetro == 0 or area < 800: continue 
 
-    # 1. Calculamos Factor de Forma
+    # Calculamos Factor de Forma
     fp = area / (perimetro ** 2)
     
 
-    # 2. Calculamos Vértices (Geometría)
+    # Calculamos Vértices (Geometría)
     approx = cv2.approxPolyDP(cnt, 0.02 * perimetro, True)
     
     num_vertices = len(approx)
@@ -134,7 +134,7 @@ for i, cnt in enumerate(contours):
             subs, _ = cv2.findContours(roi, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
             
             puntos = 0
-            puntos_detectados = [] # Para dibujar visualmente qué está contando
+            puntos_detectados = [] 
             
             for s in subs:
                 area_punto = cv2.contourArea(s)
@@ -155,7 +155,7 @@ for i, cnt in enumerate(contours):
                     if circularidad_punto > 0.65:
                         puntos += 1
                         
-                        # Guardamos la posición para dibujarlo (ajustando coordenadas al original)
+                        # Guardamos la posición para dibujarlo
                         M_p = cv2.moments(s)
                         if M_p["m00"] != 0:
                             cx_p = int(M_p["m10"] / M_p["m00"]) + x + margen
@@ -170,7 +170,7 @@ for i, cnt in enumerate(contours):
             dados_cnt.append(puntos)
             color = (0, 0, 255) # Rojo
             
-            # (Opcional) Dibujamos puntos amarillos sobre los pips detectados para verificar
+            #Dibujamos puntos amarillos sobre los pips detectados para verificar
             for pt in puntos_detectados:
                 cv2.circle(img_resultado, pt, 3, (0, 255, 255), -1)
         
@@ -188,7 +188,7 @@ for i, cnt in enumerate(contours):
         monedas_cnt.append(val)
         color = (0, 255, 0) # Verde
 
-    # --- VISUALIZACIÓN ---
+    # VISUALIZACIÓN 
     cv2.drawContours(img_resultado, [cnt], -1, color, 2)
     
     M = cv2.moments(cnt)
@@ -206,13 +206,12 @@ mostrar("Resultado Clasificado Hibrido", img_resultado)
 
 
 # REPORTE
-print("\n" + "="*30)
-print("      REPORTE FINAL      ")
-print("="*30)
+
+print("      REPORTE FINAL")
+
 print(f"MONEDAS: {len(monedas_cnt)}")
-print(f" - 10c: {monedas_cnt.count('10c')} | 1p: {monedas_cnt.count('1p')} | 50c: {monedas_cnt.count('50c')}")
+print(f" -10c: {monedas_cnt.count('10c')} | -1p: {monedas_cnt.count('1p')} | -50c: {monedas_cnt.count('50c')}")
 print("-" * 30)
 print(f"DADOS: {len(dados_cnt)}")
 for val in sorted(set(dados_cnt)):
     print(f" - Valor {val}: {dados_cnt.count(val)}")
-print("="*30)

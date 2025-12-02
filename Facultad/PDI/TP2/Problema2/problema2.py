@@ -25,18 +25,13 @@ def etapa1_preprocesado_realce(img_bgr):
 
 # DEFINICIÓN DE OBJETO
 def etapa2_definicion_objeto(img_binaria):
-    """
-    ETAPA 2 – Definición del Objeto (Estrategia: Cortar y Pegar FINO)
-    Unidad utilizada:
-    	U6: Morfología Matemática
-    """
     
     # EROSIÓN VERTICAL 
     kernel_corte = cv2.getStructuringElement(cv2.MORPH_RECT, (1, 3))
     # Aplica erosion para desconectar de la parrilla/paragolpes
     img_cortada = cv2.erode(img_binaria, kernel_corte, iterations=1)
 
-    #  CLAUSURA HORIZONTAL (U6) 
+    #  CLAUSURA HORIZONTAL
     # Kernel 
     kernel_union = cv2.getStructuringElement(cv2.MORPH_RECT, (14, 1))
     morfologia = cv2.morphologyEx(img_cortada, cv2.MORPH_CLOSE, kernel_union)
@@ -66,7 +61,7 @@ def etapa3_clasificacion(img_morfologia, img_original_para_dibujar):
         # Dibuja un rectángulo AZUL para cada contorno analizado
         cv2.rectangle(img_debug, (x, y), (x+w, y+h), (255, 0, 0), 1)
 
-        # U7: Filtros de Clasificación (Basados en geometría y posición)
+        # Filtros de Clasificación (Basados en geometría y posición)
         # Filtra por Proporción (entre 1.5 y 7.0 para aceptar inclinación)
         filtro_ratio = 1.5 < aspect_ratio < 7.0 
         # Filtra por Área (entre un mínimo de ruido y un máximo del coche)
@@ -90,11 +85,8 @@ def etapa3_clasificacion(img_morfologia, img_original_para_dibujar):
 
 # SEGMENTACIÓN DE CARACTERES  
 def etapa4_segmentacion_caracteres(roi_placa, roi_color_para_dibujar):
-    """
-    ETAPA 4 – Segmentación de Caracteres
-    Unidades: U3 (Umbral), U6 (Erosión), U7 (Descriptores)
-    """
-    # 1. Umbralización Adaptativa  - Aplicada al recorte de la placa
+    
+    # Umbralización Adaptativa  - Aplicada al recorte de la placa
     th_chars = cv2.adaptiveThreshold(roi_placa, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
                                      cv2.THRESH_BINARY_INV, 15, 4)
     
@@ -135,19 +127,19 @@ def etapa4_segmentacion_caracteres(roi_placa, roi_color_para_dibujar):
     return img_chars, len(chars_validos)
 
 
-#  MAIN
+
 if __name__ == "__main__":
 
     
     import os
     directorio = os.path.dirname(os.path.abspath(__file__))
-    archivo = "img04.png" # Prueba con varias: 04, 09, 11
+    archivo = "img04.png" 
     ruta = os.path.join(directorio, "Patentes", archivo)
     
     img = cv2.imread(ruta)
     
     if img is not None:
-        # --- SECUENCIA COMPLETA ---
+        # SECUENCIA COMPLETA
         
         # A. DETECCIÓN DE PLACA
         th_otsu = etapa1_preprocesado_realce(img)
@@ -163,7 +155,7 @@ if __name__ == "__main__":
             gray_original = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
             roi_para_procesar = gray_original[y:y+h, x:x+w]
             
-            roi_color = img[y:y+h, x:x+w] # Para dibujar
+            roi_color = img[y:y+h, x:x+w] 
             
             cv2.imshow("1. Placa Detectada", roi_color)
             
