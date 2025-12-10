@@ -1,0 +1,12 @@
+# Ignorar todo menos mi proyecto
+/*
+
+# Permitir estas carpetas
+!/Problema1/
+!/Problema2/
+
+# Permitir archivos sueltos importantes
+!/.gitignore
+!/README.md
+!/Informe_TP2_PDI-1.pdf
+
