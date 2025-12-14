@@ -132,63 +132,9 @@ def detectar_placa(img_morfologia, img_original, numero_imagen):
     else:
         return etapa3_clasificacion(img_morfologia, img_original)
 
-# --------------------------------------------------------------------------
-# UTILIDADES DE RECORTE (Hough y Estadísticos)
-# --------------------------------------------------------------------------
-def recortar_bordes(img, porcentaje=0.1):
-    # Recorte simple basado en intensidad media de bordes vs centro
-    if len(img.shape) == 3:
-        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    else:
-        gray = img.copy()
-    alto, ancho = gray.shape
-    borde_sup = np.mean(gray[:int(alto*0.1), :])
-    borde_inf = np.mean(gray[-int(alto*0.1):, :])
-    centro = np.mean(gray[int(alto*0.3):int(alto*0.7), int(ancho*0.3):int(ancho*0.7)])
-    
-    # Si hay mucha diferencia de contraste, asumimos que hay un marco y recortamos
-    if abs(centro - (borde_sup + borde_inf) / 2) > 50:
-        margen_y = int(alto * porcentaje)
-        margen_x = int(ancho * porcentaje)
-        return img[margen_y:alto-margen_y, margen_x:ancho-margen_x]
-    return img
-
-def recortar_con_hough(img):
-    # Intenta encontrar líneas rectas (bordes de chapa) para ajustar el recorte
-    if len(img.shape) == 3:
-        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    else:
-        gray = img.copy()
-    alto, ancho = gray.shape
-    edges = cv2.Canny(gray, 50, 150)
-    lines = cv2.HoughLinesP(edges, 1, np.pi/180, 50, minLineLength=ancho*0.3, maxLineGap=10)
-    
-    if lines is None:
-        return img
-    
-    horizontales, verticales = [], []
-    for line in lines:
-        x1, y1, x2, y2 = line[0]
-        angulo = np.abs(np.arctan2(y2-y1, x2-x1) * 180 / np.pi)
-        if angulo < 20 or angulo > 160: # Líneas horizontales
-            horizontales.append((y1 + y2) // 2)
-        elif 70 < angulo < 110: # Líneas verticales
-            verticales.append((x1 + x2) // 2)
-            
-    # Define límites basados en las líneas encontradas
-    top = min(horizontales) if horizontales else 0
-    bottom = max(horizontales) if horizontales else alto
-    left = min(verticales) if verticales else 0
-    right = max(verticales) if verticales else ancho
-    
-    # Validación simple para no recortar demasiado
-    if bottom - top < alto * 0.3 or right - left < ancho * 0.3:
-        return img
-    return img[top:bottom, left:right]
-
 
 # --------------------------------------------------------------------------
-# SEGMENTACIÓN DE CARACTERES (ROBUSTA)
+# SEGMENTACIÓN DE CARACTERES 
 # Estrategia: Probar configuraciones progresivamente más agresivas si no se hallan caracteres.
 # --------------------------------------------------------------------------
 def segmentar_caracteres(placa_img):
