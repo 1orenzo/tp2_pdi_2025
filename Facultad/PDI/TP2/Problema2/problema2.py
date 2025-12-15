@@ -227,7 +227,7 @@ def _segmentar_core(placa_img, umbral_fijo=False, recortar_inferior=False,  eros
 # MAIN
 if __name__ == "__main__":
     carpeta = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Patentes")
-    VER = 1
+    VER = 10
     
     print(f"{'Imagen':<10} | {'Estado':<6} | {'Chars':<5}")
     print("-" * 30)
